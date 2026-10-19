@@ -44,6 +44,7 @@ pub enum StatusError {
 /// Represents the current state of the radio's state machine.
 /// Extracted from status byte bits 6:4.
 #[derive(Debug, Clone, Copy, PartialEq)]
+#[cfg_attr(feature = "defmt", derive(defmt::Format))]
 pub enum OperatingMode {
     /// STDBY_RC mode: RC oscillator running
     StandbyRc = 0x2,
@@ -77,6 +78,7 @@ impl TryFrom<u8> for OperatingMode {
 /// Indicates the result of the last command execution.
 /// Extracted from status byte bits 3:1.
 #[derive(Debug, Clone, Copy, PartialEq)]
+#[cfg_attr(feature = "defmt", derive(defmt::Format))]
 pub enum CommandStatus {
     /// Data is available to be read from the radio
     DataAvailable = 0x2,
@@ -116,6 +118,7 @@ impl TryFrom<u8> for CommandStatus {
 /// - Bits 3:1: Command status
 /// - Bits 0: Reserved
 #[derive(Debug, Clone, Copy)]
+#[cfg_attr(feature = "defmt", derive(defmt::Format))]
 pub struct Status {
     /// Current operating mode of the device
     pub mode: OperatingMode,
