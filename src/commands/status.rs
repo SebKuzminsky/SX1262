@@ -223,6 +223,7 @@ impl Command for GetRssiInst {
 ///
 /// Contains information about received packet in buffer.
 #[derive(Debug, Clone, Copy)]
+#[cfg_attr(feature = "defmt", derive(defmt::Format))]
 pub struct RxBufferStatus {
     /// Length of received payload in bytes
     pub payload_length: u8,
@@ -248,6 +249,7 @@ impl FromByteArray for RxBufferStatus {
 ///
 /// Contains the device status and RX buffer information.
 #[derive(Debug, Clone, Copy)]
+#[cfg_attr(feature = "defmt", derive(defmt::Format))]
 pub struct GetRxBufferStatusResponse {
     /// Device status from the first response byte
     pub status: Status,
@@ -277,6 +279,7 @@ impl FromByteArray for GetRxBufferStatusResponse {
 /// - Data remains valid until next RX operation
 /// - Use with ReadBuffer to retrieve payload
 #[derive(Debug, Clone)]
+#[cfg_attr(feature = "defmt", derive(defmt::Format))]
 pub struct GetRxBufferStatus;
 
 impl Command for GetRxBufferStatus {
