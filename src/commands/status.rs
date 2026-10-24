@@ -386,6 +386,7 @@ impl Command for GetPacketStatus {
 ///
 /// Contains flags for various error conditions.
 #[derive(Debug, Clone, Copy)]
+#[cfg_attr(feature = "defmt", derive(defmt::Format))]
 pub struct DeviceErrors {
     /// RC64k calibration error
     pub rc64k_calib_err: bool,
@@ -428,6 +429,7 @@ impl FromByteArray for DeviceErrors {
 ///
 /// Contains the device status and error flags.
 #[derive(Debug, Clone, Copy)]
+#[cfg_attr(feature = "defmt", derive(defmt::Format))]
 pub struct GetDeviceErrorsResponse {
     /// Device status from the first response byte
     pub status: Status,
@@ -477,6 +479,7 @@ impl Command for GetDeviceErrors {
 ///
 /// Contains the two status bytes returned by the command.
 #[derive(Debug, Clone, Copy)]
+#[cfg_attr(feature = "defmt", derive(defmt::Format))]
 pub struct ClearDeviceErrorsResponse {
     /// First status byte
     pub status_1: Status,
