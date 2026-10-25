@@ -17,26 +17,30 @@ use regiface::FromByteArray;
 use crate::{Command, NoParameters};
 
 /// Error type for invalid operating mode values
-#[derive(Debug, Clone, Copy, PartialEq)]
+#[derive(Debug, Clone, Copy, PartialEq, thiserror::Error)]
 pub enum OperatingModeError {
     /// The value does not correspond to a valid operating mode
+    #[error("cannot deserialize Operating Mode from raw value {0}")]
     InvalidValue(u8),
 }
 
 /// Error type for invalid command status values
-#[derive(Debug, Clone, Copy, PartialEq)]
+#[derive(Debug, Clone, Copy, PartialEq, thiserror::Error)]
 pub enum CommandStatusError {
     /// The value does not correspond to a valid command status
+    #[error("cannot deserialize Command Status from raw value {0}")]
     InvalidValue(u8),
 }
 
 /// Error type for status byte parsing
-#[derive(Debug, Clone, Copy, PartialEq)]
+#[derive(Debug, Clone, Copy, PartialEq, thiserror::Error)]
 pub enum StatusError {
     /// Error extracting operating mode from status byte
-    InvalidMode(OperatingModeError),
+    #[error(transparent)]
+    InvalidMode(#[from] OperatingModeError),
     /// Error extracting command status from status byte
-    InvalidCommandStatus(CommandStatusError),
+    #[error(transparent)]
+    InvalidCommandStatus(#[from] CommandStatusError),
 }
 
 /// Operating mode of the device

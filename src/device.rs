@@ -280,10 +280,12 @@ where
     pub async fn execute_command_async<C>(
         &mut self,
         command: C,
-    ) -> Result<C::ResponseParameters, RegifaceError>
+    ) -> Result<C::ResponseParameters, crate::error::CommandError<SPI>>
     where
         C: Command<IdType = u8>,
         C::CommandParameters: ToByteArray<Error = Infallible>,
+        crate::error::DeserializationError:
+            From<<<C as regiface::Command>::ResponseParameters as regiface::FromByteArray>::Error>,
     {
         let request = command.invoking_parameters().to_bytes().unwrap();
         let mut raw_response = <C::ResponseParameters as FromByteArray>::Array::new();
@@ -295,9 +297,9 @@ where
                 embedded_hal_async::spi::Operation::Read(raw_response.as_mut()),
             ])
             .await
-            .map_err(|_| RegifaceError::BusError)?;
+            .map_err(crate::error::CommandError::<SPI>::BusError)?;
 
         C::ResponseParameters::from_bytes(raw_response)
-            .map_err(|_| RegifaceError::DeserializationError)
+            .map_err(|e| crate::error::CommandError::<SPI>::DeserializationError(e.into()))
     }
 }
