@@ -79,8 +79,10 @@ use regiface::*;
 
 pub mod commands;
 pub mod device;
+pub mod error;
 pub mod registers;
 
 pub use commands::*;
 pub use device::Device;
+pub use error::*;
 pub use registers::*;
