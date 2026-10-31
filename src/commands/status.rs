@@ -82,7 +82,7 @@ impl TryFrom<u8> for OperatingMode {
 /// Extracted from status byte bits 3:1.
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub enum CommandStatus {
-    Unused = 0x0,
+    Reserved = 0x0,
     RFU = 0x1,
     /// Data is available to be read from the radio
     DataAvailable = 0x2,
@@ -101,7 +101,7 @@ impl TryFrom<u8> for CommandStatus {
 
     fn try_from(value: u8) -> Result<Self, Self::Error> {
         match value {
-            0x0 => Ok(Self::Unused),
+            0x0 => Ok(Self::Reserved),
             0x1 => Ok(Self::RFU),
             0x2 => Ok(Self::DataAvailable),
             0x3 => Ok(Self::Timeout),
