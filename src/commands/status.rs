@@ -49,6 +49,8 @@ pub enum StatusError {
 /// Extracted from status byte bits 6:4.
 #[derive(Debug, Clone, Copy, PartialEq, defmt::Format)]
 pub enum OperatingMode {
+    Unused = 0x0,
+    RFU = 0x1,
     /// STDBY_RC mode: RC oscillator running
     StandbyRc = 0x2,
     /// STDBY_XOSC mode: Crystal oscillator running
@@ -66,6 +68,8 @@ impl TryFrom<u8> for OperatingMode {
 
     fn try_from(value: u8) -> Result<Self, Self::Error> {
         match value {
+            0x0 => Ok(Self::Unused),
+            0x1 => Ok(Self::RFU),
             0x2 => Ok(Self::StandbyRc),
             0x3 => Ok(Self::StandbyXosc),
             0x4 => Ok(Self::FrequencySynthesizer),
@@ -82,6 +86,8 @@ impl TryFrom<u8> for OperatingMode {
 /// Extracted from status byte bits 3:1.
 #[derive(Debug, Clone, Copy, PartialEq, defmt::Format)]
 pub enum CommandStatus {
+    Unused = 0x0,
+    RFU = 0x1,
     /// Data is available to be read from the radio
     DataAvailable = 0x2,
     /// Command timed out during execution
@@ -99,6 +105,8 @@ impl TryFrom<u8> for CommandStatus {
 
     fn try_from(value: u8) -> Result<Self, Self::Error> {
         match value {
+            0x0 => Ok(Self::Unused),
+            0x1 => Ok(Self::RFU),
             0x2 => Ok(Self::DataAvailable),
             0x3 => Ok(Self::Timeout),
             0x4 => Ok(Self::ProcessingError),
@@ -134,6 +142,13 @@ impl FromByteArray for Status {
     fn from_bytes(bytes: Self::Array) -> Result<Self, Self::Error> {
         let mode = (bytes[0] >> 4) & 0x7;
         let cmd = (bytes[0] >> 1) & 0x7;
+
+        // #[cfg(feature = "defmt")]
+        // {
+        //     defmt::info!("Status FromByteArray {:x}", bytes);
+        //     defmt::info!("    mode {:x}", mode);
+        //     defmt::info!("    cmd {:x}", cmd);
+        // }
 
         Ok(Self {
             mode: OperatingMode::try_from(mode).map_err(StatusError::InvalidMode)?,
