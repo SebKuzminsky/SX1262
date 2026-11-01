@@ -309,30 +309,89 @@ impl Command for GetRxBufferStatus {
     }
 }
 
-/// Packet status response
-///
-/// Contains status information about received packet.
-/// Interpretation depends on packet type (LoRa/FSK).
+defmt::bitflags! {
+    /// Rx Status for FSK packets.
+    pub struct FskRxStatus: u8 {
+        ///   - bit 7: Preamble error
+        const PREAMBLE_ERROR = 1 << 7;
+        ///   - bit 6: Sync error
+        const SYNC_ERROR = 1 << 6;
+        ///   - bit 5: Addr error
+        const ADDR_ERROR = 1 << 5;
+        ///   - bit 4: CRC error
+        const CRC_ERROR = 1 << 4;
+        ///   - bit 3: Length error
+        const LENGTH_ERROR = 1 << 3;
+        ///   - bit 2: Abort error
+        const ABORT_ERROR = 1 << 2;
+        ///   - bit 1: Packet received
+        const PACKET_RECEIVED = 1 << 1;
+        ///   - bit 0: Packet sent
+        const PACKET_SENT = 1 << 0;
+    }
+}
+
+impl FromByteArray for FskRxStatus {
+    type Error = Infallible;
+    type Array = [u8; 1];
+
+    fn from_bytes(bytes: Self::Array) -> Result<Self, Self::Error> {
+        Ok(FskRxStatus::from_bits_truncate(u8::from_be_bytes(bytes)))
+    }
+}
+
 #[derive(Debug, Clone, Copy, defmt::Format)]
-pub struct PacketStatus {
-    /// Status bytes array:
+pub struct FskPacketStatus {
+    /// Status bytes array
     /// FSK Mode:
     /// - status[0]: RxStatus
-    ///   - bit 7: Preamble error
-    ///   - bit 6: Sync error
-    ///   - bit 5: Addr error
-    ///   - bit 4: CRC error
-    ///   - bit 3: Length error
-    ///   - bit 2: Abort error
-    ///   - bit 1: Packet received
-    ///   - bit 0: Packet sent
     /// - status[1]: RssiSync (-value/2 dBm)
     /// - status[2]: RssiAvg (-value/2 dBm)
-    ///
-    /// LoRa Mode:
+    pub fsk_rx_status: FskRxStatus,
+    pub rssi_sync_dbm: f32,
+    pub rssi_avg_dbm: f32,
+}
+
+impl From<PacketStatus> for FskPacketStatus {
+    fn from(raw: PacketStatus) -> Self {
+        Self {
+            fsk_rx_status: FskRxStatus::from_bytes([raw.status[0]]).unwrap(),
+            rssi_sync_dbm: raw.status[1] as f32 / -2.0,
+            rssi_avg_dbm: raw.status[2] as f32 / -2.0,
+        }
+    }
+}
+
+#[derive(Debug, Clone, Copy, defmt::Format)]
+pub struct LoraPacketStatus {
+    /// Status bytes array, LoRa Mode:
     /// - status[0]: RssiPkt (-value/2 dBm)
     /// - status[1]: SnrPkt (value/4 dB)
     /// - status[2]: SignalRssiPkt (-value/2 dBm)
+    pub rssi_dbm: f32,
+    pub snr_db: f32,
+    pub signal_rssi_dbm: f32,
+}
+
+impl From<PacketStatus> for LoraPacketStatus {
+    fn from(raw: PacketStatus) -> Self {
+        Self {
+            rssi_dbm: raw.status[0] as f32 / -2.0,
+            snr_db: raw.status[1] as f32 / 4.0,
+            signal_rssi_dbm: raw.status[2] as f32 / -2.0,
+        }
+    }
+}
+
+/// Packet status response
+///
+/// Contains status information about received packet.  Interpretation
+/// depends on packet type (LoRa/FSK) but the packet type isn't known by
+/// the GetPacketStatus command so it can't type-convert. The callers may
+/// use Into or From to type-convert PacketStatus into FskPacketStatus
+/// or LoraPacketStatus as appropriate.
+#[derive(Debug, Clone, Copy, defmt::Format)]
+pub struct PacketStatus {
     pub status: [u8; 3],
 }
 
